@@ -1,0 +1,39 @@
+extends layout
+
+block content
+    script(src='/javascripts/materialize.js')
+    script(src='/javascripts/init.js')
+    script(type='text/javascript').
+      Comparator.url = '/compare'
+
+
+    mixin filePicker(nm,placeholder)
+        .file-field.input-field
+            .btn
+                span Load
+                i.material-icons.right publish
+                input(type='file', name=nm, id=nm)
+            .file-path-wrapper
+                input(placeholder=placeholder).file-path.validate
+
+    .container
+        h2.center.teal-text Step 3: Compare and Download
+        .section
+            .row
+                .input-field.col.s12
+                    input(id='scenario', name='scenario', type='text', placeholder= 'Scenario', value= scenario, disabled='true')
+                    label(for='scenario') Scenario
+            .row
+                .col.s12
+                    button#action(type='button').btn.waves-effect.left Compare
+                        i.material-icons.right compare_arrows
+                    a#download(href='/static/' + scenario + 'out.xls', download=scenario + 'out.xls').btn.waves-effect.right Download
+                        i.material-icons.right file_download
+            .row
+                .col.s12
+                    a(href='/').btn.waves-effect.left Compare Another!
+                        i.material-icons.right autorenew
+            .row
+                .progress
+                    .indeterminate
+            include ./console
