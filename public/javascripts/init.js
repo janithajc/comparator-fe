@@ -6,6 +6,9 @@ var Comparator = {
   actionBtn : null,
   downloadBtn: null,
   progress: null,
+  pkCheck: null,
+  leftPks: null,
+  rightPks: null,
   init: function () {
     Materialize.updateTextFields();
     Comparator.progress = $('.progress');
@@ -18,6 +21,14 @@ var Comparator = {
     Comparator.downloadBtn.on('click', function (e) {
       Comparator.downloadBtn.removeClass('pulse');
     });
+
+    if(Comparator.url === '/autogen') {
+      Comparator.pkCheck = $('.pk-check').detach();
+      Comparator.leftPks = $('#leftFile');
+      Comparator.rightPks = $('#rightFile');
+
+      Comparator.drawPks();
+    }
   },
   ajaxToConsole: function () {
     Comparator.progress.show();
@@ -32,6 +43,9 @@ var Comparator = {
         if(data.stdout.length > 0){
           Console.log(data.stdout);
           Comparator.downloadBtn.addClass('pulse');
+          if(Comparator.url === '/compare'){
+            Comparator.downloadBtn.click();
+          }
         }
         if(data.stderr.length > 0){
           Console.error(data.stderr);
@@ -39,9 +53,31 @@ var Comparator = {
       },
       error: function (data) {
         Comparator.progress.hide();
-        Console.log(data.responseText);
+        Console.error(data.responseText);
       }
     });
+  },
+  drawPks: function () {
+    $.ajax({
+      url: '/pks',
+      success: function (data) {
+        data.leftHeaders.forEach(function (v) {
+          Comparator.addPk(v, 'leftPks');
+        });
+        data.rightHeaders.forEach(function (v) {
+          Comparator.addPk(v, 'rightPks');
+        });
+      }
+    });
+  },
+  addPk: function (v, side) {
+    var pk = Comparator.pkCheck.clone();
+    pk.find('input').attr('value',v);
+    pk.find('input').attr('id',v);
+    pk.find('label').text(v);
+    pk.find('label').attr('for',v);
+
+    Comparator[side].append(pk);
   }
 };
 

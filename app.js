@@ -45,15 +45,19 @@ app.post('/upload', function (req, res, next) {
       req.session.scenario = scenario;
 
       req.session.leftFile = leftFile.name.replace(' ','');
-      req.session.rightFile = leftFile.name.replace(' ','');
+      req.session.rightFile = rightFile.name.replace(' ','');
 
-      leftFile.mv(basePath + 'left.csv');
-      rightFile.mv(basePath + 'right.csv');
+      leftFile.mv(basePath + req.session.leftFile);
+      rightFile.mv(basePath + req.session.rightFile);
 
       res.redirect('/step2');
       break;
     case '2':
       var map = req.files.map;
+
+      var pks = req.param('pks');
+      req.session.pks = pks;
+
       if(map){
         map.mv(config.get('Paths.base')+req.session.scenario+'map.csv.csv');
       }

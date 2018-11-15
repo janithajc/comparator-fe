@@ -35,12 +35,21 @@ block content
                         .col.s10
                             +filePicker('map','Select the column mapping .csv')
                     .row
+                        #pks.col.s12.card-panel
+                            h4.teal-text Select Primary Keys
+                            .col.s12.card-panel.grey.lighten-3.scroll
+                                #leftFile.col.s6
+                                    p.pk-check
+                                        input#check(type='checkbox', name='pks')
+                                        label(for='check') Red
+                                #rightFile.col.s6
+                    .row
                         .col.s12
                             button(onclick='window.location="/"', type='button').btn.waves-effect.left Back
                                 i.material-icons.left navigate_before
                             button(type='submit').btn.waves-effect.right Next
                                 i.material-icons.right navigate_next
-                    .row
-                        .progress
-                            .indeterminate
+            .row
+                .progress
+                    .indeterminate
             include ./console

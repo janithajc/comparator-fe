@@ -7,12 +7,16 @@ a {
   color: #00B7FF;
 }
 
+.scroll {
+  overflow: scroll;
+  max-height: 300px;
+}
+
 #console {
   overflow: scroll;
   font: 14px "Ubuntu Mono", Helvetica, Arial, sans-serif;
   min-height: 200px;
 }
-
 .console-line {
   overflow: visible;
 }
