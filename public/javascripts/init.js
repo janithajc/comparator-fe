@@ -42,10 +42,10 @@ var Comparator = {
         Comparator.progress.hide();
         if(data.stdout.length > 0){
           Console.log(data.stdout);
-          Comparator.downloadBtn.addClass('pulse');
           if(Comparator.url === '/compare'){
             Comparator.downloadBtn.click();
           }
+          Comparator.downloadBtn.addClass('pulse');
         }
         if(data.stderr.length > 0){
           Console.error(data.stderr);
