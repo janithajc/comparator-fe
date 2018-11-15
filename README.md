@@ -28,6 +28,7 @@ The file names of these will be shown on the resulting excel file
 > *Note:*
 >* Named left and right on the placeholders as those are the positions that they will show up on the resulting excel
 >* Both files *need to be* of .csv format and *need to contain* headers
+>* The names for both files need to be only letters and numbers (Except for the .csv part of-course)
 >* You *cannot* proceed without selecting both files (Why would you?)
 
 #### 1.3 Click next to upload the files and proceed
