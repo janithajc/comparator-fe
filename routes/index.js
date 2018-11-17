@@ -1,5 +1,5 @@
 var express = require('express');
-const { exec } = require('child_process');
+const { exec , spawn } = require('child_process');
 const config = require('config');
 var session = require('express-session');
 var csv = require('fast-csv');
@@ -53,24 +53,56 @@ router.get('/autogen', function(req, res, next) {
   });
 });
 
-/* GET home page. */
+let logs = {};
+
 router.get('/compare', function(req, res, next) {
-  var basePath = config.get('Paths.base')+req.session.scenario;
-  var cmd = 'python ' + config.get('Paths.tool')+ ' ' + basePath+req.session.leftFile+' ' + basePath+req.session.rightFile+' ' + basePath+'map.csv ' + basePath+'out.xls "' + req.session.pks.join(',') + '"';
-  exec(cmd, (err, stdout, stderr) => {
-    if (err) {
-      // render the error page
-      res.status(err.status || 500);
-      res.send(err.message);
-      return;
-    }
+  let scenario = req.session.scenario;
+  let basePath = config.get('Paths.base')+scenario,
+      cmd = 'python',
+      opts = [
+        config.get('Paths.tool'),
+        basePath+req.session.leftFile,
+        basePath+req.session.rightFile,
+        basePath+'map.csv',
+        basePath+'out.xls',
+        req.session.pks.join(',')
+      ];
+  let proc = spawn(cmd, opts);
 
-    // the *entire* stdout and stderr (buffered)
-    console.log(`stdout: ${stdout}`);
-    console.log(`stderr: ${stderr}`);
+  logs[scenario] = {
+    stdout: [],
+    stderr: [],
+    code: null
+  };
 
-    res.send({stdout, stderr});
+  proc.stdout.on('data', (data) => {
+    logs[scenario].stdout.push(data.toString());
   });
+
+  proc.stderr.on('data', (data) => {
+    logs[scenario].stderr.push(data.toString());
+  });
+
+  proc.on('close', (code) => {
+    logs[scenario].code = code;
+  });
+
+  res.send({stdout: 'Comparison started!', stderr: ''});
+});
+
+router.get('/status', function (req, res) {
+  let scenario = req.session.scenario;
+
+  let response = {
+    stdout: logs[scenario].stdout,
+    stderr: logs[scenario].stderr,
+    code: logs[scenario].code
+  };
+
+  logs[scenario].stdout = [];
+  logs[scenario].stderr = [];
+
+  res.send(response);
 });
 
 /* GET home page. */

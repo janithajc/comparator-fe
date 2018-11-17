@@ -33,8 +33,7 @@ var Comparator = {
   ajaxToConsole: function () {
     Comparator.progress.show();
     if(Comparator.url === '/compare'){
-      Console.log('Comparison Started...');
-      Console.log('This may take a few minutes.');
+      Comparator.beginPolling();
     }
     $.ajax({
       url: Comparator.url,
@@ -42,10 +41,9 @@ var Comparator = {
         Comparator.progress.hide();
         if(data.stdout.length > 0){
           Console.log(data.stdout);
-          if(Comparator.url === '/compare'){
-            Comparator.downloadBtn.click();
+          if(Comparator.url !== '/compare'){
+            Comparator.downloadBtn.addClass('pulse');
           }
-          Comparator.downloadBtn.addClass('pulse');
         }
         if(data.stderr.length > 0){
           Console.error(data.stderr);
@@ -56,6 +54,37 @@ var Comparator = {
         Console.error(data.responseText);
       }
     });
+  },
+  beginPolling: function () {
+    var poller = setInterval(function () {
+      $.ajax({
+        url: '/status',
+        success: function (data) {
+          if(data.stdout && data.stdout.length > 0){
+            data.stdout.forEach(function (s) {
+              Console.log(s);
+            });
+            if(data.code !== null) {
+              if(data.code !== 0) {
+                Console.error('Comparison Failed!');
+              } else {
+                Console.log('Comparison Success!');
+                Comparator.downloadBtn.addClass('pulse');
+              }
+              clearInterval(poller);
+            }
+          }
+          if(data.stderr && data.stderr.length > 0){
+            data.stderr.forEach(function (s) {
+              Console.error(s);
+            });
+          }
+        },
+        error: function (data) {
+          Console.error(data.responseText);
+        }
+      });
+    }, 1000);
   },
   drawPks: function () {
     $.ajax({
