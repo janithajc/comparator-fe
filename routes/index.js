@@ -4,8 +4,12 @@ const config = require('config');
 var session = require('express-session');
 var csv = require('fast-csv');
 var fs = require("fs");
+const EventEmitter = require('events').EventEmitter;
+const processEvents = new EventEmitter;
 
 var router = express.Router();
+
+let expressWs = require('express-ws')(router);
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -76,33 +80,41 @@ router.get('/compare', function(req, res, next) {
   };
 
   proc.stdout.on('data', (data) => {
-    logs[scenario].stdout.push(data.toString());
+    processEvents.emit(scenario,{level: 'stdout', data: data.toString()});
   });
 
   proc.stderr.on('data', (data) => {
-    logs[scenario].stderr.push(data.toString());
+    processEvents.emit(scenario,{level: 'stderr', data: data.toString()});
   });
 
   proc.on('close', (code) => {
-    logs[scenario].code = code;
+    processEvents.emit(scenario,{level: 'close', code: code});
   });
 
   res.send({stdout: 'Comparison started!', stderr: ''});
 });
 
-router.get('/status', function (req, res) {
-  let scenario = req.session.scenario;
+router.ws('/status', function (ws, req) {
+  let scenario = req.param('scenario');
 
-  let response = {
-    stdout: logs[scenario].stdout,
-    stderr: logs[scenario].stderr,
-    code: logs[scenario].code
-  };
-
-  logs[scenario].stdout = [];
-  logs[scenario].stderr = [];
-
-  res.send(response);
+  processEvents.on(scenario, (data) => {
+    if(ws.readyState !== 1) {
+      console.log('Trying to send with no websocket');
+      return;
+    }
+    switch(data.level) {
+      case 'stdout':
+        ws.send('[STDOUT]'+data.data);
+        break;
+      case 'stderr':
+        ws.send('[STDERR]'+data.data);
+        break;
+      case 'close':
+        ws.send('[CODE]'+data.code);
+        ws.close();
+        processEvents.removeAllListeners(scenario);
+    }
+  });
 });
 
 /* GET home page. */

@@ -4,6 +4,7 @@
 var Console = {
   console: $('#console'),
   consoleLine: $('.console-line').clone(),
+  scrollToBottom: true,
   init: function () {
     Console.consoleLine.removeClass('green-text');
   },
@@ -12,19 +13,25 @@ var Console = {
     var line = Console.consoleLine.clone();
     line.addClass('green-text');
     line.text('[' + Console.line++ + '] ' + str);
-    Console.console.append(line);
+    Console.write(line);
   },
   warn: function (str) {
     var line = Console.consoleLine.clone();
     line.addClass('orange-text');
     line.text('[' + Console.line++ + '] ' + '[WARN]\t: '+str);
-    Console.console.append(line);
+    Console.write(line);
   },
   error: function (str) {
     var line = Console.consoleLine.clone();
     line.addClass('red-text');
     line.text('[' + Console.line++ + '] ' + '[ERROR]\t: '+str);
-    Console.console.append(line);
+    Console.write(line);
+  },
+  write: function (element) {
+    Console.console.append(element);
+    if(Console.scrollToBottom) {
+      Console.console.animate({ scrollTop: Console.console.prop("scrollHeight")}, 1000);
+    }
   }
 };
 

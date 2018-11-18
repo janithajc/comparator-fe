@@ -9,6 +9,8 @@ var Comparator = {
   pkCheck: null,
   leftPks: null,
   rightPks: null,
+  scenarioInput : null,
+  webSocket: null,
   init: function () {
     Materialize.updateTextFields();
     Comparator.progress = $('.progress');
@@ -16,6 +18,8 @@ var Comparator = {
 
     Comparator.actionBtn = $('#action');
     Comparator.actionBtn.on('click', Comparator.ajaxToConsole);
+
+    Comparator.scenarioInput = $('#scenario');
 
     Comparator.downloadBtn = $('#download');
     Comparator.downloadBtn.on('click', function (e) {
@@ -33,7 +37,7 @@ var Comparator = {
   ajaxToConsole: function () {
     Comparator.progress.show();
     if(Comparator.url === '/compare'){
-      Comparator.beginPolling();
+      Comparator.startWebSocket();
     }
     $.ajax({
       url: Comparator.url,
@@ -55,36 +59,39 @@ var Comparator = {
       }
     });
   },
-  beginPolling: function () {
-    var poller = setInterval(function () {
-      $.ajax({
-        url: '/status',
-        success: function (data) {
-          if(data.stdout && data.stdout.length > 0){
-            data.stdout.forEach(function (s) {
-              Console.log(s);
-            });
-            if(data.code !== null) {
-              if(data.code !== 0) {
-                Console.error('Comparison Failed!');
-              } else {
-                Console.log('Comparison Success!');
-                Comparator.downloadBtn.addClass('pulse');
-              }
-              clearInterval(poller);
-            }
-          }
-          if(data.stderr && data.stderr.length > 0){
-            data.stderr.forEach(function (s) {
-              Console.error(s);
-            });
-          }
-        },
-        error: function (data) {
-          Console.error(data.responseText);
+  startWebSocket: function () {
+    Comparator.actionBtn.prop('disabled', true);
+    Comparator.downloadBtn.addClass('disabled');
+    Comparator.webSocket = new WebSocket(`ws://${document.location.host}/status?scenario=${Comparator.scenarioInput.val()}`);
+    Comparator.webSocket.onmessage = function (data) {
+      if (data.data.indexOf('[STDOUT]') >= 0) {
+        Console.log(data.data);
+      }
+      if (data.data.indexOf('[STDERR]') >= 0) {
+        Console.error(data.data);
+      }
+      if (data.data.indexOf('[CODE]') >= 0) {
+        switch (data.data.replace('[CODE]', '')) {
+          case '0':
+            Console.log('Comparison complete!');
+            Comparator.downloadBtn.removeClass('disabled');
+            Comparator.downloadBtn.addClass('pulse');
+            break;
+          default:
+            Console.error('Error comparing files');
         }
-      });
-    }, 1000);
+
+        Comparator.webSocket.close();
+      }
+    };
+    Comparator.webSocket.onclose = function (msg) {
+      console.log(msg);
+      Comparator.actionBtn.prop('disabled', false);
+    };
+    Comparator.webSocket.error = function (msg) {
+      console.error(msg);
+      Comparator.actionBtn.prop('disabled', false);
+    }
   },
   drawPks: function () {
     $.ajax({

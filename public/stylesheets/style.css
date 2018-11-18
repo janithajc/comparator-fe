@@ -16,6 +16,7 @@ a {
   overflow: scroll;
   font: 14px "Ubuntu Mono", Helvetica, Arial, sans-serif;
   min-height: 200px;
+  max-height: 300px;
 }
 .console-line {
   overflow: visible;
