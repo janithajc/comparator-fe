@@ -5,7 +5,7 @@ block content
     script(src='/javascripts/init.js')
 
 
-    mixin filePicker(nm,placeholder)
+    mixin filePicker(nm,placeholder,required)
         .col.s12.m6
             .file-field.input-field
                 .btn
@@ -13,23 +13,70 @@ block content
                     i.material-icons.right publish
                     input(type='file', name=nm, id=nm)
                 .file-path-wrapper
-                    input(placeholder=placeholder).file-path.validate
+                    input(placeholder=placeholder, required=required, data-error="This file is required!").file-path.validate
 
     .container
-        h2.center.teal-text Step 1: Set Up The Scenario
-        .section
-            .row
-                form(ref='uploadForm', id='uploadForm', action='/upload?step=1', method='post', enctype='multipart/form-data')
-                    .row
-                        .input-field.col.s12
-                            input(id='scenario', name='scenario', type='text', placeholder='Scenario', value=scenario)
-                            label(for='scenario') Scenario
-                    .row
-                        +filePicker('left','Select the left file .csv')
-                        +filePicker('right','Select the right file .csv')
-                    .row
-                        .col.s12
-                            button(type='submit').btn.waves-effect.right Next
-                                i.material-icons.right navigate_next
-            .row
-                include ./console
+        h3.center.teal-text Scenario:
+            span#scenarioSpan.teal-text.text-darken-3
+        ul.stepper.horizontal
+            li.step.active
+                .step-title.waves-effect Scenario Setup
+                .step-content
+                    .section
+                        .row
+                            form(ref='csvUploadForm', id='csvUploadForm', action='/upload?step=1', method='post', enctype='multipart/form-data')
+                                .row
+                                    .input-field.col.s12
+                                        input(id='scenario', name='scenario', type='text', placeholder='Scenario', value=scenario, required=true).validate
+                                        label(for='scenario') Scenario
+                                .row
+                                    +filePicker('left','Select the left file .csv',true)
+                                    +filePicker('right','Select the right file .csv',true)
+                        .row
+                            .col.s12
+                                button(data-form-id='csvUploadForm').waves-effect.waves-dark.btn.next-step-btn Continue
+            li.step
+                .step-title.waves-effect Column Mapping
+                .step-content
+                    .section
+                        .row
+                            form(ref='mapUploadForm', id='mapUploadForm', action='/upload?step=2', method='post', enctype='multipart/form-data')
+                                .row
+                                    .col.s12
+                                        button#autoGen(type='button').btn.waves-effect.left Auto-Generate
+                                            i.material-icons.right compare_arrows
+                                        a#mapDownload(href='/static/' + scenario + 'map.csv.csv', download='map.csv').btn.waves-effect.right Download
+                                            i.material-icons.right file_download
+                                .row
+                                    .col.s10
+                                        +filePicker('map','Select the column mapping .csv',false)
+                                .row
+                                    #pks.col.s12.card-panel
+                                        h4.teal-text Select Primary Keys
+                                        .col.s12.card-panel.grey.lighten-5.scroll
+                                            #leftFile.col.s6
+                                                p.pk-check
+                                                    input#check(type='checkbox', name='pks')
+                                                    label(for='check') Red
+                                            #rightFile.col.s6
+                        .row
+                            .col.s12
+                                button(data-form-id='mapUploadForm').waves-effect.waves-dark.btn.next-step-btn Continue
+                                button.waves-effect.waves-dark.btn.btn-flat.previous-step Back
+            li.step
+                .step-title.waves-effect Compare
+                .step-content
+                    .section
+                        .row
+                            .col.s12
+                                button#compare(type='button').btn.waves-effect.left Compare
+                                    i.material-icons.right compare_arrows
+                                a#finalDownload(href='/static/' + scenario + 'out.xls', download=scenario + 'out.xls').disabled.btn.waves-effect.right Download
+                                    i.material-icons.right file_download
+                        .row
+                            .col.s12
+                                button.waves-effect.waves-dark.btn.btn-flat.previous-step Back
+                                a(href='/').btn.waves-effect.right Compare Another!
+                                    i.material-icons.right autorenew
+        .row
+            include ./console

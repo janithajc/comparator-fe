@@ -91,7 +91,7 @@ router.get('/compare', function(req, res, next) {
     processEvents.emit(scenario,{level: 'close', code: code});
   });
 
-  res.send({stdout: 'Comparison started!', stderr: ''});
+  res.send({stdout: `Comparison started!\n${cmd} ${opts.join(' ')}`, stderr: ''});
 });
 
 router.ws('/status', function (ws, req) {
@@ -99,7 +99,7 @@ router.ws('/status', function (ws, req) {
 
   processEvents.on(scenario, (data) => {
     if(ws.readyState !== 1) {
-      console.log('Trying to send with no websocket');
+      console.warn('Trying to send with no websocket');
       return;
     }
     switch(data.level) {

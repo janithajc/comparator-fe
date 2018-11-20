@@ -6,5 +6,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="jquery-3.3.1" level="application" />
     <orderEntry type="library" name="jquery.simple.websocket" level="application" />
+    <orderEntry type="library" name="mstepper" level="application" />
   </component>
 </module>

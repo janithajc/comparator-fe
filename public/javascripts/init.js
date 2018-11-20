@@ -3,50 +3,146 @@
  */
 var Comparator = {
   url: null,
-  actionBtn : null,
-  downloadBtn: null,
-  progress: null,
+  actionBtns : {
+    autoGen: null,
+    compare: null
+  },
+  downloadBtns: {
+    map: null,
+    final: null
+  },
   pkCheck: null,
   leftPks: null,
   rightPks: null,
   scenarioInput : null,
+  scenarioSpan : null,
   webSocket: null,
-  init: function () {
-    Materialize.updateTextFields();
-    Comparator.progress = $('.progress');
-    Comparator.progress.hide();
-
-    Comparator.actionBtn = $('#action');
-    Comparator.actionBtn.on('click', Comparator.ajaxToConsole);
-
-    Comparator.scenarioInput = $('#scenario');
-
-    Comparator.downloadBtn = $('#download');
-    Comparator.downloadBtn.on('click', function (e) {
-      Comparator.downloadBtn.removeClass('pulse');
-    });
-
-    if(Comparator.url === '/autogen') {
-      Comparator.pkCheck = $('.pk-check').detach();
-      Comparator.leftPks = $('#leftFile');
-      Comparator.rightPks = $('#rightFile');
-
-      Comparator.drawPks();
+  stepper: null,
+  progress: {
+    show: function () {
+      Comparator.stepper.activateFeedback();
+    },
+    hide: function () {
+      Comparator.stepper.destroyFeedback()
     }
   },
-  ajaxToConsole: function () {
+  utils: {
+    stepper: {
+      nextButtonClick: function (e) {
+        e.preventDefault();
+        let form = $('#'+$(this).data('form-id'));
+        if(Comparator.utils.forms.validate(form)){
+          form.submit();
+        }
+      }
+    },
+    forms: {
+      validate: function (f) {
+        let required = f.find('input[required]'),
+            valid = true;
+        $.each(required, function (i,o) {
+          if(!$(o).val()) {
+            valid = false;
+            $(o).addClass('invalid');
+          } else {
+            $(o).removeClass('invalid');
+          }
+        });
+
+        return valid;
+      },
+      ajaxSubmit: function (e) {
+        e.preventDefault();
+
+        let form = $(this);
+        let data = new FormData(form[0]);
+
+        $.ajax({
+          type: "POST",
+          enctype: 'multipart/form-data',
+          url: form.prop('action'),
+          data: data,
+          processData: false,
+          contentType: false,
+          cache: false,
+          timeout: 600000,
+          success: function (data) {
+            Console.log('Upload success');
+            Console.log(JSON.stringify(data));
+            Comparator.stepper.nextStep();
+            Comparator.stepper.activateFeedback();
+            if(Comparator.stepper.getSteps().active.index === 1) {
+              Comparator.drawPks();
+            }
+          },
+          error: function (e) {
+            Console.error('Upload error');
+            Console.error(e.responseText);
+          }
+        }).done(function (e) {
+          Comparator.progress.hide();
+          $("#btnSubmit").prop("disabled", false);
+        });
+      }
+    }
+  },
+  init: function () {
+    Materialize.updateTextFields();
+
+    Comparator.pkCheck = $('.pk-check').detach();
+    Comparator.leftPks = $('#leftFile');
+    Comparator.rightPks = $('#rightFile');
+
+    let stepper = document.querySelector('.stepper');
+    Comparator.stepper = new MStepper(stepper, {
+      firstActive: 0,
+      linearStepsNavigation: false,
+      showFeedbackPreloader: true
+    });
+
+    $('#csvUploadForm').on('submit',Comparator.utils.forms.ajaxSubmit);
+    $('#mapUploadForm').on('submit',Comparator.utils.forms.ajaxSubmit);
+
+    $('.next-step-btn').on('click', Comparator.utils.stepper.nextButtonClick);
+
+    Comparator.actionBtns.autoGen = $('#autoGen');
+    Comparator.actionBtns.autoGen.on('click', function(){Comparator.ajaxToConsole('/autogen')});
+
+    Comparator.actionBtns.compare = $('#compare');
+    Comparator.actionBtns.compare.on('click', function(){Comparator.ajaxToConsole('/compare')});
+
+    Comparator.scenarioInput = $('#scenario');
+    Comparator.scenarioSpan = $('#scenarioSpan');
+    Comparator.scenarioSpan.text(Comparator.scenarioInput.val());
+    Comparator.scenarioInput.on('input', function (e) {
+      Comparator.scenarioSpan.text($(this).val());
+    });
+
+    Comparator.downloadBtns.map = $('#mapDownload');
+    Comparator.downloadBtns.map.on('click', function (e) {
+      Comparator.downloadBtns.map.removeClass('pulse');
+    });
+
+    Comparator.downloadBtns.final = $('#finalDownload');
+    Comparator.downloadBtns.final.on('click', function (e) {
+      Comparator.downloadBtns.final.removeClass('pulse');
+    });
+  },
+  ajaxToConsole: function (url) {
     Comparator.progress.show();
-    if(Comparator.url === '/compare'){
+    if(url === '/compare'){
       Comparator.startWebSocket();
     }
     $.ajax({
-      url: Comparator.url,
+      url: url,
       success: function (data) {
-        Comparator.progress.hide();
+        if(Comparator.url !== '/compare') {
+          Comparator.progress.hide();
+        }
         if(data.stdout.length > 0){
           Console.log(data.stdout);
           if(Comparator.url !== '/compare'){
-            Comparator.downloadBtn.addClass('pulse');
+            Comparator.downloadBtns.map.addClass('pulse');
           }
         }
         if(data.stderr.length > 0){
@@ -60,8 +156,8 @@ var Comparator = {
     });
   },
   startWebSocket: function () {
-    Comparator.actionBtn.prop('disabled', true);
-    Comparator.downloadBtn.addClass('disabled');
+    Comparator.actionBtns.compare.prop('disabled', true);
+    Comparator.downloadBtns.final.addClass('disabled');
     Comparator.webSocket = new WebSocket(`ws://${document.location.host}/status?scenario=${Comparator.scenarioInput.val()}`);
     Comparator.webSocket.onmessage = function (data) {
       if (data.data.indexOf('[STDOUT]') >= 0) {
@@ -74,8 +170,8 @@ var Comparator = {
         switch (data.data.replace('[CODE]', '')) {
           case '0':
             Console.log('Comparison complete!');
-            Comparator.downloadBtn.removeClass('disabled');
-            Comparator.downloadBtn.addClass('pulse');
+            Comparator.downloadBtns.final.removeClass('disabled');
+            Comparator.downloadBtns.final.addClass('pulse');
             break;
           default:
             Console.error('Error comparing files');
@@ -86,14 +182,16 @@ var Comparator = {
     };
     Comparator.webSocket.onclose = function (msg) {
       console.log(msg);
-      Comparator.actionBtn.prop('disabled', false);
+      Comparator.actionBtns.compare.prop('disabled', false);
+      Comparator.progress.hide();
     };
     Comparator.webSocket.error = function (msg) {
-      console.error(msg);
-      Comparator.actionBtn.prop('disabled', false);
+      Console.warn(msg);
+      Comparator.actionBtns.compare.prop('disabled', false);
     }
   },
   drawPks: function () {
+    Comparator.clearAllPks();
     $.ajax({
       url: '/pks',
       success: function (data) {
@@ -105,6 +203,10 @@ var Comparator = {
         });
       }
     });
+  },
+  clearAllPks: function () {
+    Comparator.leftPks.find('*').remove();
+    Comparator.rightPks.find('*').remove();
   },
   addPk: function (v, side) {
     var pk = Comparator.pkCheck.clone();

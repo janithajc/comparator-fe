@@ -31,16 +31,17 @@ app.post('/upload', function (req, res, next) {
   var step = req.param('step');
   switch (step) {
     case '1':
-      var leftFile = req.files.left,
+      let leftFile = req.files.left,
           rightFile = req.files.right;
 
       if(!leftFile || !rightFile) {
-        res.redirect('/?err=noFiles');
+        res.status(400);
+        res.send('Left file or right file is not defined');
         return;
       }
 
-      var scenario = req.param('scenario').replace(' ','');
-      var basePath = config.get('Paths.base') + scenario;
+      let scenario = req.param('scenario').replace(' ','');
+      let basePath = config.get('Paths.base') + scenario;
 
       req.session.scenario = scenario;
 
@@ -50,19 +51,19 @@ app.post('/upload', function (req, res, next) {
       leftFile.mv(basePath + req.session.leftFile);
       rightFile.mv(basePath + req.session.rightFile);
 
-      res.redirect('/step2');
+      res.send({success: true});
       break;
     case '2':
-      var map = req.files.map;
+      let map = req.files.map;
 
-      var pks = req.param('pks');
+      let pks = req.param('pks');
       req.session.pks = pks;
 
       if(map){
         map.mv(config.get('Paths.base')+req.session.scenario+'map.csv.csv');
       }
 
-      res.redirect('/step3');
+      res.send({success:true});
   }
 });
 
