@@ -18,26 +18,6 @@ router.get('/', function(req, res, next) {
 });
 
 /* GET home page. */
-router.get('/step2', function(req, res, next) {
-  var scen = req.session.scenario;
-  if(scen === undefined){
-    res.redirect('/');
-    return;
-  }
-  res.render('step2', { title: 'Step 2', scenario: scen });
-});
-
-/* GET home page. */
-router.get('/step3', function(req, res, next) {
-  var scen = req.session.scenario;
-  if(scen === undefined){
-    res.redirect('/');
-    return;
-  }
-  res.render('step3', { title: 'Step 3', scenario: scen });
-});
-
-/* GET home page. */
 router.get('/autogen', function(req, res, next) {
   var basePath = config.get('Paths.base')+req.session.scenario;
   var cmd = 'python ' + config.get('Paths.tool') + ' m ' + basePath+req.session.leftFile+' ' + basePath+req.session.rightFile+' ' + basePath+'map.csv ' + basePath+'out.xls';
@@ -61,6 +41,12 @@ let logs = {};
 
 router.get('/compare', function(req, res, next) {
   let scenario = req.session.scenario;
+  let pks = null;
+  if(Array.isArray(req.session.pks)) {
+    pks = req.session.pks.join(',');
+  } else {
+    pks = req.session.pks;
+  }
   let basePath = config.get('Paths.base')+scenario,
       cmd = 'python',
       opts = [
@@ -69,7 +55,7 @@ router.get('/compare', function(req, res, next) {
         basePath+req.session.rightFile,
         basePath+'map.csv',
         basePath+'out.xls',
-        req.session.pks.join(',')
+        pks
       ];
   let proc = spawn(cmd, opts);
 
