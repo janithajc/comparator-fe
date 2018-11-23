@@ -14,6 +14,7 @@ var Comparator = {
   pkCheck: null,
   leftPks: null,
   rightPks: null,
+  scenario : null,
   scenarioInput : null,
   scenarioSpan : null,
   webSocket: null,
@@ -84,6 +85,9 @@ var Comparator = {
           $("#btnSubmit").prop("disabled", false);
         });
       }
+    },
+    escape: function (str) {
+      return str.replace(' ','');
     }
   },
   init: function () {
@@ -113,9 +117,14 @@ var Comparator = {
 
     Comparator.scenarioInput = $('#scenario');
     Comparator.scenarioSpan = $('#scenarioSpan');
-    Comparator.scenarioSpan.text(Comparator.scenarioInput.val());
+
+    Comparator.scenario = Comparator.scenarioInput.val();
+
+    Comparator.scenarioSpan.text(Comparator.scenario);
     Comparator.scenarioInput.on('input', function (e) {
-      Comparator.scenarioSpan.text($(this).val());
+      Comparator.scenario = Comparator.utils.escape($(this).val());
+      Comparator.scenarioSpan.text(Comparator.scenario);
+      Comparator.downloadBtns.map.prop('href','/static/' + Comparator.scenario + 'map.csv.csv');
     });
 
     Comparator.downloadBtns.map = $('#mapDownload');
