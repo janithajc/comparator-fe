@@ -58,6 +58,8 @@ var Comparator = {
         let form = $(this);
         let data = new FormData(form[0]);
 
+        Comparator.progress.show();
+
         $.ajax({
           type: "POST",
           enctype: 'multipart/form-data',
@@ -71,7 +73,7 @@ var Comparator = {
             Console.log('Upload success');
             Console.log(JSON.stringify(data));
             Comparator.stepper.nextStep();
-            Comparator.stepper.activateFeedback();
+            Comparator.progress.hide();
             if(Comparator.stepper.getSteps().active.index === 1) {
               Comparator.drawPks();
             }
@@ -119,12 +121,15 @@ var Comparator = {
     Comparator.scenarioSpan = $('#scenarioSpan');
 
     Comparator.scenario = Comparator.scenarioInput.val();
+    Comparator.downloadBtns.map.prop('href','/static/' + Comparator.scenario + 'map.csv.csv');
+    Comparator.downloadBtns.final.prop('href','/static/' + Comparator.scenario + 'out.xls');
 
     Comparator.scenarioSpan.text(Comparator.scenario);
     Comparator.scenarioInput.on('input', function (e) {
       Comparator.scenario = Comparator.utils.escape($(this).val());
       Comparator.scenarioSpan.text(Comparator.scenario);
       Comparator.downloadBtns.map.prop('href','/static/' + Comparator.scenario + 'map.csv.csv');
+      Comparator.downloadBtns.final.prop('href','/static/' + Comparator.scenario + 'out.xls');
     });
 
     Comparator.downloadBtns.map = $('#mapDownload');
