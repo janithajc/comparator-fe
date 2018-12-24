@@ -121,6 +121,9 @@ var Comparator = {
     Comparator.scenarioSpan = $('#scenarioSpan');
 
     Comparator.scenario = Comparator.scenarioInput.val();
+    Comparator.downloadBtns.map = $('#mapDownload');
+    Comparator.downloadBtns.final = $('#finalDownload');
+
     Comparator.downloadBtns.map.prop('href','/static/' + Comparator.scenario + 'map.csv.csv');
     Comparator.downloadBtns.final.prop('href','/static/' + Comparator.scenario + 'out.xls');
 
@@ -132,12 +135,10 @@ var Comparator = {
       Comparator.downloadBtns.final.prop('href','/static/' + Comparator.scenario + 'out.xls');
     });
 
-    Comparator.downloadBtns.map = $('#mapDownload');
     Comparator.downloadBtns.map.on('click', function (e) {
       Comparator.downloadBtns.map.removeClass('pulse');
     });
 
-    Comparator.downloadBtns.final = $('#finalDownload');
     Comparator.downloadBtns.final.on('click', function (e) {
       Comparator.downloadBtns.final.removeClass('pulse');
     });

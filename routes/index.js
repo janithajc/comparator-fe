@@ -112,15 +112,19 @@ router.get('/pks', function(req, res, next) {
   var leftHeaders = [], rightHeaders = [], doneSides = [];
 
   try{
-    var leftCsvStream = csv({headers: true})
+    var leftCsvStream = csv({headers: true, discardUnmappedColumns: true})
         .on("data", function(data){
           if(leftHeaders.length === 0){
             leftHeaders = Object.keys(data);
             done('left');
+            leftCsvStream.end();
             return;
           } else {
             return;
           }
+        })
+        .on("error", function (data) {
+          console.log(data);
         })
         .on("end", function(){
           console.log("done");
@@ -128,15 +132,19 @@ router.get('/pks', function(req, res, next) {
 
     leftStream.pipe(leftCsvStream);
 
-    var rightCsvStream = csv({headers: true})
+    var rightCsvStream = csv({headers: true, discardUnmappedColumns: true})
         .on("data", function(data){
           if(rightHeaders.length === 0){
             rightHeaders = Object.keys(data);
             done('right');
+            rightCsvStream.end();
             return;
           } else {
             return;
           }
+        })
+        .on("error", function (data) {
+          console.log(data);
         })
         .on("end", function(){
           console.log("done");
