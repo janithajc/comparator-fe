@@ -24,7 +24,7 @@ var Comparator = {
       Comparator.stepper.activateFeedback();
     },
     hide: function () {
-      Comparator.stepper.destroyFeedback()
+      Comparator.stepper.destroyFeedback();
     }
   },
   utils: {
@@ -128,8 +128,10 @@ var Comparator = {
     Comparator.downloadBtns.final.prop('href','/static/' + Comparator.scenario + 'out.xls');
 
     Comparator.scenarioSpan.text(Comparator.scenario);
+    document.title = Comparator.scenario || "Enter Scenario";
     Comparator.scenarioInput.on('input', function (e) {
       Comparator.scenario = Comparator.utils.escape($(this).val());
+      document.title = Comparator.scenario || "";
       Comparator.scenarioSpan.text(Comparator.scenario);
       Comparator.downloadBtns.map.prop('href','/static/' + Comparator.scenario + 'map.csv.csv');
       Comparator.downloadBtns.final.prop('href','/static/' + Comparator.scenario + 'out.xls');
