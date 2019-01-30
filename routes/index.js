@@ -51,6 +51,7 @@ router.get('/compare', function(req, res, next) {
       cmd = 'python',
       opts = [
         config.get('Paths.tool'),
+        'c',
         basePath+req.session.leftFile,
         basePath+req.session.rightFile,
         basePath+'map.csv',

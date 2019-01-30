@@ -30,6 +30,7 @@ var Console = {
   write: function (element) {
     Console.console.append(element);
     if(Console.scrollToBottom) {
+      Console.console.stop();
       Console.console.animate({ scrollTop: Console.console.prop("scrollHeight")}, 1000);
     }
   }

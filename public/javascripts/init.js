@@ -35,6 +35,9 @@ var Comparator = {
         if(Comparator.utils.forms.validate(form)){
           form.submit();
         }
+      },
+      prevButtonClick: function (e) {
+        Comparator.progress.hide();
       }
     },
     forms: {
@@ -110,6 +113,7 @@ var Comparator = {
     $('#mapUploadForm').on('submit',Comparator.utils.forms.ajaxSubmit);
 
     $('.next-step-btn').on('click', Comparator.utils.stepper.nextButtonClick);
+    $('.previous-step').on('click', Comparator.utils.stepper.prevButtonClick);
 
     Comparator.actionBtns.autoGen = $('#autoGen');
     Comparator.actionBtns.autoGen.on('click', function(){Comparator.ajaxToConsole('/autogen')});
