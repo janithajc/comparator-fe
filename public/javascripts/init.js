@@ -139,6 +139,7 @@ var Comparator = {
       Comparator.scenarioSpan.text(Comparator.scenario);
       Comparator.downloadBtns.map.prop('href','/static/' + Comparator.scenario + 'map.csv.csv');
       Comparator.downloadBtns.final.prop('href','/static/' + Comparator.scenario + 'out.xls');
+      Comparator.downloadBtns.final.prop('download',Comparator.scenario + 'out.xls');
     });
 
     Comparator.downloadBtns.map.on('click', function (e) {
